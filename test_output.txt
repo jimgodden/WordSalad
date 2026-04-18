@@ -1,0 +1,42 @@
+[2m[WebServer] [22m
+[2m[WebServer] [22m> word-salad@0.0.0 dev
+[2m[WebServer] [22m> vite
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22m  [32m[1mVITE[22m v7.3.1[39m  [2mready in [0m[1m484[22m[2m[0m ms[22m
+[2m[WebServer] [22m
+[2m[WebServer] [22m  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m5173[22m/[39m
+[2m[WebServer] [22m  [32m➜[39m  [1mNetwork[22m: [36mhttp://192.168.1.143:[1m5173[22m/[39m
+
+Running 1 test using 1 worker
+
+  ✘  1 [chromium] › tests\multiplayer.spec.ts:15:5 › Word Salad Multiplayer Flow › Complete Game Loop (5.6s)
+
+
+  1) [chromium] › tests\multiplayer.spec.ts:15:5 › Word Salad Multiplayer Flow › Complete Game Loop 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('text=Room:')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('text=Room:')[22m
+
+
+      22 |         // Get Room Code
+      23 |         const roomCodeElement = hostPage.locator('text=Room:');
+    > 24 |         await expect(roomCodeElement).toBeVisible();
+         |                                       ^
+      25 |         const roomText = await roomCodeElement.textContent();
+      26 |         const roomCode = roomText?.split(': ')[1]?.trim() || '';
+      27 |         expect(roomCode).toHaveLength(4);
+        at C:\repos\WordSalad\tests\multiplayer.spec.ts:24:39
+
+    Error Context: test-results\multiplayer-Word-Salad-Multiplayer-Flow-Complete-Game-Loop-chromium\error-context.md
+
+  1 failed
+    [chromium] › tests\multiplayer.spec.ts:15:5 › Word Salad Multiplayer Flow › Complete Game Loop ─
