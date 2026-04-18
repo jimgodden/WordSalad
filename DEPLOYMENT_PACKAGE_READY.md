@@ -1,42 +1,42 @@
-# 🚀 Deployment Package Ready
+# 🚀 Ubuntu 24 Deployment Package Ready
 
-Your Linguistic Linguini app is ready for deployment to Windows Server 2025!
+Your Linguistic Linguini app is ready for deployment to Ubuntu 24 on Azure!
 
 ## What's Included
 
-### 1. **setup_vm.ps1** - Main Deployment Script
+### 1. **setup_vm.sh** - Main Deployment Script
 Complete one-time setup that:
-- ✅ Installs Node.js, npm, Chocolatey
-- ✅ Configures Windows Firewall
+- ✅ Updates system packages
+- ✅ Installs Node.js 22 LTS
+- ✅ Configures UFW firewall
 - ✅ Installs PM2 process manager
 - ✅ Builds and starts your application
 - ✅ Sets up auto-restart on reboot
 - ✅ Provides detailed logging
 
 **Usage:**
-```powershell
-cd deploy
-.\setup_vm.ps1                    # Default (port 3000)
-.\setup_vm.ps1 -AppPort 8080      # Custom port
-.\setup_vm.ps1 -SkipRestart       # Don't reboot
+```bash
+sudo ./setup_vm.sh                    # Default (port 3000)
+sudo ./setup_vm.sh --port 8080        # Custom port
+sudo ./setup_vm.sh --skip-reboot      # Don't reboot
 ```
 
-### 2. **manage_app.ps1** - Management Script
+### 2. **manage_app.sh** - Management Script
 Day-to-day operations:
-```powershell
-.\manage_app.ps1 -Action status    # Check status
-.\manage_app.ps1 -Action logs      # View logs
-.\manage_app.ps1 -Action restart   # Restart app
-.\manage_app.ps1 -Action update    # Update & restart
-.\manage_app.ps1 -Action health    # Run health checks
-.\manage_app.ps1 -Action monitor   # Monitor resources
+```bash
+./manage_app.sh status                # Check status
+./manage_app.sh logs                  # View logs
+./manage_app.sh restart               # Restart app
+./manage_app.sh update                # Update & restart
+./manage_app.sh health                # Run health checks
+./manage_app.sh monitor               # Monitor resources
 ```
 
-### 3. **quick_update.ps1** - Fast Updates
+### 3. **quick_update.sh** - Fast Updates
 Quick deployment of new code:
-```powershell
-.\quick_update.ps1                 # Pull, build, restart
-.\quick_update.ps1 -SkipGitPull    # Just build & restart
+```bash
+./quick_update.sh                     # Pull, build, restart
+./quick_update.sh --skip-git-pull     # Just build & restart
 ```
 
 ### 4. **DEPLOYMENT_GUIDE.md** - Complete Documentation
@@ -56,47 +56,48 @@ Quick deployment of new code:
 
 ### Initial Setup (One Time)
 ```
-1. Connect to VM via RDP
-2. Copy application files to C:\WordSalad
-3. Open PowerShell as Administrator
-4. Run: .\setup_vm.ps1
+1. Create Ubuntu 24 VM in Azure
+2. SSH into VM
+3. Clone/upload application files
+4. Run: sudo ./setup_vm.sh
 5. Wait for reboot
-6. Verify: .\manage_app.ps1 -Action health
+6. Verify: ./manage_app.sh health
 ```
 
 ### Verify It's Working
-```powershell
+```bash
 # Should show app running
 pm2 status
 
 # Should show all checks passing
-.\manage_app.ps1 -Action health
+./manage_app.sh health
 
 # Access in browser: http://<your-vm-ip>:3000
 ```
 
 ### Regular Updates
-```powershell
+```bash
 cd deploy
 
 # Quick update
-.\quick_update.ps1
+./quick_update.sh
 
 # Or use the full management script
-.\manage_app.ps1 -Action update
+./manage_app.sh update
 ```
 
 ## Key Information
 
 | Item | Details |
 |------|---------|
+| **OS** | Ubuntu 24.04 LTS |
 | **Port** | 3000 (default, customizable) |
 | **Application Name** | linguistic-linguini |
 | **Process Manager** | PM2 |
 | **Auto-Restart** | ✅ Enabled |
 | **Server File** | server/index.js |
 | **Build Output** | dist/ (frontend) |
-| **Logs Location** | C:\Logs\linguistic-linguini\ |
+| **Logs Location** | /var/log/linguistic-linguini/ |
 | **Access URL** | http://<vm-ip>:3000 |
 
 ## Features
@@ -119,44 +120,48 @@ cd deploy
 ## Azure VM Setup (Before Running Scripts)
 
 1. **Create VM in Azure Portal:**
-   - Image: Windows Server 2025 Datacenter
-   - Size: Standard_B2s minimum (2 vCPU, 4 GB RAM)
-   - Enable public IP or use Azure Bastion
+   - Image: Ubuntu 24.04 LTS
+   - Size: Standard_B1s minimum (1 vCPU, 2 GB RAM)
+   - Enable public IP
 
 2. **Network Configuration:**
    - Open inbound port 3000 (or custom port)
-   - NSG Rule: Allow TCP 3000 from your IP (or 0.0.0.0/0 for public)
+   - NSG Rule: Allow TCP 3000 from your IP
 
 3. **Connect to VM:**
-   - Download RDP file from portal
-   - Or use Remote Desktop with IP address
-   - Username: azureuser (default)
+   - Use SSH from terminal
+   - Or use Azure Bastion
+   - Default user: azureuser
 
 ## Example: Complete Deployment
 
-```powershell
+```bash
 # 1. On your local machine, prepare app files
-cd WordSalad
 git init
 git add .
 git commit -m "initial"
 
-# 2. Upload to VM (or push to Git and pull on VM)
+# 2. Push to GitHub (or upload files)
+git push origin main
 
-# 3. Connect to VM via RDP
+# 3. SSH into the Azure VM
+ssh azureuser@<your-vm-ip>
 
-# 4. On VM, open PowerShell as Administrator:
-cd C:\WordSalad\deploy
+# 4. Clone the app
+cd ~
+git clone https://github.com/yourusername/WordSalad.git
 
-# 5. Run deployment (takes ~5-10 minutes)
-.\setup_vm.ps1
+# 5. Navigate and run deployment (takes ~5-10 minutes)
+cd WordSalad/deploy
+chmod +x *.sh
+sudo ./setup_vm.sh
 
 # 6. VM will reboot automatically
 
-# 7. After reboot, verify:
-.\manage_app.ps1 -Action health
+# 7. After reboot, verify
+./manage_app.sh health
 
-# 8. Access app:
+# 8. Access app
 # Open browser: http://<your-vm-ip>:3000
 ```
 
@@ -164,21 +169,22 @@ cd C:\WordSalad\deploy
 
 | Problem | Command |
 |---------|---------|
-| App won't start | `.\manage_app.ps1 -Action logs` |
-| Can't connect from outside | `Get-NetFirewallRule -DisplayName "Allow-*"` |
+| App won't start | `./manage_app.sh logs` |
+| Can't connect from outside | `sudo ufw status` |
 | Check if app is running | `pm2 status` |
-| Restart app | `.\manage_app.ps1 -Action restart` |
+| Restart app | `./manage_app.sh restart` |
 | View real-time logs | `pm2 logs linguistic-linguini --follow` |
-| Port already in use | Change port with `-AppPort` parameter |
+| Port already in use | Change port with `--port` parameter |
 
 ## Next Steps
 
-1. **Prepare Your Azure VM** - Create Windows Server 2025 VM in Azure
-2. **Copy Files** - Transfer application to C:\WordSalad
-3. **Run Setup** - Execute `.\setup_vm.ps1` as Administrator
-4. **Verify** - Run `.\manage_app.ps1 -Action health`
-5. **Access App** - Open http://<your-vm-ip>:3000
-6. **Configure** - Set up monitoring and backups as needed
+1. **Create Azure VM** - Ubuntu 24.04 LTS
+2. **SSH to VM** - Connect via terminal
+3. **Clone/Upload Code** - Get app files on VM
+4. **Run Setup** - Execute `sudo ./setup_vm.sh`
+5. **Verify** - Run `./manage_app.sh health`
+6. **Access App** - Open http://<your-vm-ip>:3000
+7. **Configure** - Set up monitoring and backups
 
 ## Support Resources
 
@@ -186,10 +192,11 @@ cd C:\WordSalad\deploy
 
 🔧 **Command Reference**: See `README.md`
 
-💻 **Scripts with Help:**
-```powershell
-Get-Help .\setup_vm.ps1 -Full
-Get-Help .\manage_app.ps1 -Full
+💻 **Script Help:**
+```bash
+./setup_vm.sh --help
+./manage_app.sh
+./quick_update.sh --help
 ```
 
 ## Application Features
@@ -204,31 +211,31 @@ Your app includes:
 ## Customization Options
 
 ### Change Application Port
-```powershell
-.\setup_vm.ps1 -AppPort 8080
+```bash
+sudo ./setup_vm.sh --port 8080
 ```
 
 ### Use Git for Updates
-```powershell
+```bash
 # On VM:
-cd C:\WordSalad
+cd ~/WordSalad
 git pull
 cd deploy
-.\quick_update.ps1
+./quick_update.sh
 ```
 
 ### Enable HTTPS
-1. Set up IIS or nginx as reverse proxy
-2. Configure SSL certificate
-3. Point traffic to http://localhost:3000
+1. Install Nginx
+2. Configure SSL certificate (Let's Encrypt)
+3. Reverse proxy to http://localhost:3000
 
 ## Architecture
 
 ```
 ┌─────────────────────────────┐
-│    Windows Server 2025      │
+│      Ubuntu 24 VM           │
 ├─────────────────────────────┤
-│  Firewall (Port 3000)       │
+│  UFW Firewall (Port 3000)   │
 │         ↓                   │
 │  PM2 (Process Manager)      │
 │         ↓                   │
@@ -239,16 +246,25 @@ cd deploy
 └─────────────────────────────┘
 ```
 
+## Cost Benefits
+
+Compared to Windows Server:
+- 💰 **60-70% lower hosting costs**
+- ⚡ Better performance for Node.js
+- 🪶 Lighter resource usage
+- 🚀 Faster deployment
+
 ---
 
 ## Summary
 
 You now have:
-✅ **Ready-to-use deployment scripts**
-✅ **Complete documentation**
+✅ **Ready-to-use bash deployment scripts**
+✅ **Complete Ubuntu 24 documentation**
 ✅ **Day-to-day management tools**
 ✅ **Auto-restart and logging**
 ✅ **Health monitoring**
+✅ **60-70% cost savings vs Windows**
 
 **You're ready to deploy!** 🚀
 

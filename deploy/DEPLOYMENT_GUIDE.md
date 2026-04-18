@@ -1,85 +1,88 @@
-# Linguistic Linguini - Windows Server 2025 Deployment Guide
+# Linguistic Linguini - Ubuntu 24 Deployment Guide
 
 ## Overview
-This guide walks you through deploying the Linguistic Linguini application to an Azure VM running Windows Server 2025.
+This guide walks you through deploying the Linguistic Linguini application to an Azure VM running Ubuntu 24.04 LTS.
 
 ## Prerequisites
 
 ### Azure VM Requirements
-- **OS**: Windows Server 2025
-- **CPU**: 2+ cores (for dev/test), 4+ cores recommended for production
-- **RAM**: 4GB minimum, 8GB+ recommended
-- **Disk**: 30GB minimum free space
+- **OS**: Ubuntu 24.04 LTS
+- **CPU**: 1+ cores (for dev/test), 2+ cores recommended
+- **RAM**: 2GB minimum, 4GB+ recommended
+- **Disk**: 20GB minimum free space
 - **Network**: Allow inbound traffic on port 3000 (or your chosen port)
 
 ### Before Starting
-1. Create an Azure VM with Windows Server 2025
-2. Ensure you have Remote Desktop (RDP) access to the VM
-3. Have Administrator privileges on the VM
+1. Create an Azure VM with Ubuntu 24.04 LTS
+2. Ensure you have SSH access to the VM
+3. Have sudo privileges on the VM
 
 ## Deployment Steps
 
 ### Step 1: Connect to Your VM
-```powershell
-# Open Remote Desktop Connection and connect to your VM
-# Use: <your-vm-ip> as the server address
+```bash
+# On your local machine:
+ssh azureuser@<your-vm-ip>
 ```
 
 ### Step 2: Download or Clone the Application
 
-**Option A: Using Git (if installed)**
-```powershell
-cd C:\
+**Option A: Using Git (Recommended)**
+```bash
+cd /home/azureuser
 git clone https://github.com/yourusername/WordSalad.git
 cd WordSalad
 ```
 
-**Option B: Manual Upload**
-- Zip the application files locally
-- Upload via RDP file transfer
-- Extract to `C:\WordSalad`
+**Option B: Using SCP to upload files**
+```bash
+# On your local machine:
+scp -r C:\repos\WordSalad azureuser@<your-vm-ip>:/home/azureuser/
+```
 
 ### Step 3: Run the Deployment Script
 
-Open PowerShell **as Administrator** and execute:
+SSH into the VM and execute:
 
-```powershell
-# Navigate to the deploy folder
-cd C:\WordSalad\deploy
+```bash
+cd ~/WordSalad/deploy
 
-# Run the setup script
-.\setup_vm.ps1
+# Make script executable
+chmod +x setup_vm.sh
+
+# Run as sudo (required)
+sudo ./setup_vm.sh
 
 # Or specify a custom port:
-.\setup_vm.ps1 -AppPort 8080
+sudo ./setup_vm.sh --port 8080
 
 # Or skip the final reboot:
-.\setup_vm.ps1 -SkipRestart
+sudo ./setup_vm.sh --skip-reboot
 ```
 
 **What the script does:**
-1. ✅ Validates Administrator privileges
-2. ✅ Installs Chocolatey package manager
-3. ✅ Installs Node.js (LTS version)
-4. ✅ Configures Windows Firewall for your app port
-5. ✅ Installs PM2 (process manager)
-6. ✅ Builds the frontend (npm run build)
-7. ✅ Starts the application
-8. ✅ Configures auto-start on reboot
-9. ✅ Reboots the system
+1. ✅ Updates system packages
+2. ✅ Installs Node.js 22 LTS
+3. ✅ Configures UFW firewall for your app port
+4. ✅ Installs PM2 (process manager)
+5. ✅ Builds the frontend (npm run build)
+6. ✅ Starts the application
+7. ✅ Configures auto-start on reboot
+8. ✅ Reboots the system
 
 ### Step 4: Verify Deployment
 
-After the VM reboots, reconnect via RDP and run:
+After the VM reboots, reconnect via SSH and run:
 
-```powershell
-cd C:\WordSalad\deploy
+```bash
+cd ~/WordSalad/deploy
+chmod +x manage_app.sh
 
 # Check application status
-.\manage_app.ps1 -Action status
+./manage_app.sh status
 
 # Run health check
-.\manage_app.ps1 -Action health
+./manage_app.sh health
 ```
 
 You should see output showing your application is running.
@@ -98,60 +101,62 @@ Replace `<your-vm-public-ip>` with your Azure VM's public IP address.
 ## Common Management Tasks
 
 ### View Application Status
-```powershell
-.\manage_app.ps1 -Action status
+```bash
+./manage_app.sh status
 ```
 
 ### View Application Logs
-```powershell
+```bash
 # Last 30 lines
-.\manage_app.ps1 -Action logs
+./manage_app.sh logs
 
-# Last 100 lines
-.\manage_app.ps1 -Action logs -Lines 100
-
-# Real-time logs (Ctrl+C to exit)
+# Real-time logs
 pm2 logs linguistic-linguini --follow
+
+# Specific number of lines
+pm2 logs linguistic-linguini --lines 100
 ```
 
 ### Restart the Application
-```powershell
-.\manage_app.ps1 -Action restart
+```bash
+./manage_app.sh restart
 ```
 
 ### Stop the Application
-```powershell
-.\manage_app.ps1 -Action stop
+```bash
+./manage_app.sh stop
 ```
 
 ### Start the Application
-```powershell
-.\manage_app.ps1 -Action start
+```bash
+./manage_app.sh start
 ```
 
 ### Monitor Performance
-```powershell
-# Shows CPU and memory usage (refreshes every 5 seconds)
-.\manage_app.ps1 -Action monitor -Interval 5
+```bash
+# Shows CPU and memory usage in real-time
+./manage_app.sh monitor
 ```
 
 ### Update the Application
 When you want to deploy new code:
 
-```powershell
-cd C:\WordSalad
-
-# Pull latest changes
+```bash
+cd ~/WordSalad
 git pull
 
-# Or manually update files, then run:
 cd deploy
-.\manage_app.ps1 -Action update
+./manage_app.sh update
+```
+
+Or without git pull:
+```bash
+./quick_update.sh --skip-git-pull
 ```
 
 ### Run Health Check
-```powershell
-.\manage_app.ps1 -Action health
+```bash
+./manage_app.sh health
 ```
 
 ---
@@ -161,47 +166,46 @@ cd deploy
 ### Application won't start
 
 **Check logs:**
-```powershell
-.\manage_app.ps1 -Action logs
+```bash
+./manage_app.sh logs
 ```
 
 **Common issues:**
-- Port already in use: Change port with `.\setup_vm.ps1 -AppPort 8080`
+- Port already in use: Change port with `sudo ./setup_vm.sh --port 8080`
 - Missing dependencies: Run `npm install` in the project root
 - Build errors: Check `npm run build` output
 
 ### Cannot access application from outside
 
 **Check firewall rule:**
-```powershell
-Get-NetFirewallRule -DisplayName "Allow-*-Port-*"
+```bash
+sudo ufw status
 ```
 
 **Verify port is listening:**
-```powershell
-netstat -ano | findstr :3000
+```bash
+sudo netstat -tuln | grep 3000
 ```
 
 **Add firewall rule manually:**
-```powershell
-New-NetFirewallRule -DisplayName "Allow App Port 3000" `
-    -Direction Inbound -Action Allow -Protocol TCP -LocalPort 3000
+```bash
+sudo ufw allow 3000/tcp
 ```
 
 ### Application crashes repeatedly
 
 **Check for errors:**
-```powershell
+```bash
 pm2 logs linguistic-linguini --lines 50
 ```
 
 **Restart Node.js:**
-```powershell
-.\manage_app.ps1 -Action restart
+```bash
+./manage_app.sh restart
 ```
 
 **If persistent, delete and restart:**
-```powershell
+```bash
 pm2 delete linguistic-linguini
 pm2 start server/index.js --name linguistic-linguini
 ```
@@ -209,26 +213,25 @@ pm2 start server/index.js --name linguistic-linguini
 ### High memory/CPU usage
 
 **Monitor in real-time:**
-```powershell
-.\manage_app.ps1 -Action monitor
+```bash
+./manage_app.sh monitor
 ```
 
 **Check for memory leaks in logs and restart if needed:**
-```powershell
+```bash
 pm2 restart linguistic-linguini
 ```
 
 ### Deployment script fails
 
-**Run with verbose logging:**
-```powershell
-$VerbosePreference = "Continue"
-.\setup_vm.ps1 -Verbose
+**Run with verbose output:**
+```bash
+sudo bash -x ./setup_vm.sh
 ```
 
 **Check deployment log:**
-```powershell
-Get-Content C:\Logs\linguistic-linguini\deployment_*.log
+```bash
+sudo tail -f /var/log/linguistic-linguini/deployment_*.log
 ```
 
 ---
@@ -238,8 +241,8 @@ Get-Content C:\Logs\linguistic-linguini\deployment_*.log
 ### Change Application Port
 
 **Option 1: During initial setup**
-```powershell
-.\setup_vm.ps1 -AppPort 8080
+```bash
+sudo ./setup_vm.sh --port 8080
 ```
 
 **Option 2: After deployment**
@@ -249,29 +252,39 @@ Get-Content C:\Logs\linguistic-linguini\deployment_*.log
 
 ### Enable HTTPS
 
-For production, set up a reverse proxy (IIS or nginx) with SSL/TLS certificates.
+For production, set up a reverse proxy with SSL/TLS certificates:
+
+```bash
+# Install Nginx
+sudo apt-get install -y nginx
+
+# Create config (example)
+sudo nano /etc/nginx/sites-available/linguistic-linguini
+```
 
 ### Scheduled Backups
 
-Create a PowerShell scheduled task:
-```powershell
-# Backup code daily
-$trigger = New-ScheduledTaskTrigger -Daily -At 2AM
-$action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-Command `"Compress-Archive -Path C:\WordSalad\* -DestinationPath C:\Backups\WordSalad_$(Get-Date -Format yyyyMMdd).zip -Force`""
-Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "BackupWordSalad" -Description "Daily backup of WordSalad app"
+Create a cron job for daily backups:
+
+```bash
+# Edit crontab
+crontab -e
+
+# Add this line for daily backups at 2 AM
+0 2 * * * tar -czf /home/azureuser/backups/wordsalad_$(date +\%Y\%m\%d).tar.gz /home/azureuser/WordSalad
 ```
 
 ### Enable Application Insights (Monitoring)
 
 1. Create Application Insights resource in Azure
 2. Update server code with instrumentation key
-3. Deploy with `.\manage_app.ps1 -Action update`
+3. Deploy with `./manage_app.sh update`
 
 ---
 
 ## Useful PM2 Commands
 
-```powershell
+```bash
 # View all processes
 pm2 status
 
@@ -307,14 +320,15 @@ pm2 flush
 
 ## Production Best Practices
 
-1. **Use a Reverse Proxy**: Set up IIS or nginx as a reverse proxy for SSL/TLS termination
-2. **Enable Logging**: Ensure application logs are being captured for troubleshooting
+1. **Use a Reverse Proxy**: Set up Nginx or Caddy for SSL/TLS termination
+2. **Enable Logging**: Ensure application logs are being captured
 3. **Monitor Resources**: Set up Azure VM monitoring and alerts
 4. **Backup Strategy**: Regular backups of application data and configurations
 5. **Auto-Recovery**: PM2 is configured to auto-restart on reboot
 6. **Security**: 
-   - Disable unnecessary services
-   - Keep Windows Server updated
+   - Disable root SSH access
+   - Enable SSH key-based authentication
+   - Keep Ubuntu updated (`sudo apt-get update && upgrade`)
    - Use NSG rules to restrict access
    - Consider using managed identity for Azure resources
 
@@ -323,13 +337,13 @@ pm2 flush
 ## Support & Troubleshooting
 
 ### Useful Paths
-- **App Directory**: `C:\WordSalad`
-- **Logs**: `C:\Logs\linguistic-linguini\`
-- **Deploy Scripts**: `C:\WordSalad\deploy\`
-- **Node Modules**: `C:\WordSalad\node_modules\`
+- **App Directory**: `/home/azureuser/WordSalad`
+- **Logs**: `/var/log/linguistic-linguini/`
+- **Deploy Scripts**: `/home/azureuser/WordSalad/deploy/`
+- **Node Modules**: `/home/azureuser/WordSalad/node_modules/`
 
 ### Check System Requirements
-```powershell
+```bash
 # Node.js version
 node --version
 
@@ -339,13 +353,17 @@ npm --version
 # PM2 version
 pm2 --version
 
-# Available disk space
-Get-Volume
+# Disk space
+df -h
+
+# Memory usage
+free -h
 ```
 
 ### Get System Info
-```powershell
-Get-ComputerInfo
+```bash
+uname -a
+lsb_release -a
 ```
 
 ---

@@ -1,28 +1,36 @@
 # Deployment Scripts & Documentation
 
-Quick reference for deploying Linguistic Linguini to Windows Server 2025.
+Quick reference for deploying Linguistic Linguini to Ubuntu 24 on Azure.
 
 ## 📁 Files in This Directory
 
 | File | Purpose |
 |------|---------|
-| `setup_vm.ps1` | **Main deployment script** - Runs initial setup, installs Node.js, builds app, starts server |
-| `manage_app.ps1` | **App management script** - Start, stop, restart, view logs, monitor, update |
+| `setup_vm.sh` | **Main deployment script** - Runs initial setup, installs Node.js, builds app, starts server |
+| `manage_app.sh` | **App management script** - Start, stop, restart, view logs, monitor, update |
+| `quick_update.sh` | **Quick update script** - Pull latest code, build, restart |
 | `DEPLOYMENT_GUIDE.md` | **Comprehensive guide** - Full deployment instructions and troubleshooting |
 | `README.md` | This file |
 
 ## 🚀 Quick Start
 
 ### First-Time Deployment
-```powershell
-# Open PowerShell as Administrator
-cd C:\WordSalad\deploy
+```bash
+# SSH into the VM
+ssh azureuser@<your-vm-ip>
 
-# Run deployment
-.\setup_vm.ps1
+# Navigate to the deploy folder
+cd ~/WordSalad/deploy
+
+# Make scripts executable
+chmod +x setup_vm.sh manage_app.sh quick_update.sh
+
+# Run deployment (as sudo)
+sudo ./setup_vm.sh
 
 # Script will:
-# • Install Node.js
+# • Update system packages
+# • Install Node.js 22 LTS
 # • Install PM2
 # • Build the application
 # • Start the server
@@ -30,53 +38,59 @@ cd C:\WordSalad\deploy
 ```
 
 ### Check Status After Deployment
-```powershell
-.\manage_app.ps1 -Action health
+```bash
+./manage_app.sh health
 ```
 
 ## 📋 Common Commands
 
 | Task | Command |
 |------|---------|
-| Check app status | `.\manage_app.ps1 -Action status` |
-| View logs | `.\manage_app.ps1 -Action logs` |
-| Restart app | `.\manage_app.ps1 -Action restart` |
-| Update app | `.\manage_app.ps1 -Action update` |
-| Monitor performance | `.\manage_app.ps1 -Action monitor` |
-| Health check | `.\manage_app.ps1 -Action health` |
+| Check app status | `./manage_app.sh status` |
+| View logs | `./manage_app.sh logs` |
+| Restart app | `./manage_app.sh restart` |
+| Update app | `./manage_app.sh update` |
+| Monitor performance | `./manage_app.sh monitor` |
+| Health check | `./manage_app.sh health` |
 
 ## 🎛️ Script Parameters
 
-### setup_vm.ps1
-```powershell
-# Default (uses port 3000)
-.\setup_vm.ps1
+### setup_vm.sh
+```bash
+# Default (uses port 3000, reboots)
+sudo ./setup_vm.sh
 
 # Custom port
-.\setup_vm.ps1 -AppPort 8080
+sudo ./setup_vm.sh --port 8080
 
 # Skip final reboot
-.\setup_vm.ps1 -SkipRestart
+sudo ./setup_vm.sh --skip-reboot
 
 # Custom port + skip reboot
-.\setup_vm.ps1 -AppPort 8080 -SkipRestart
+sudo ./setup_vm.sh --port 8080 --skip-reboot
 ```
 
-### manage_app.ps1
-```powershell
+### manage_app.sh
+```bash
 # View status
-.\manage_app.ps1 -Action status
+./manage_app.sh status
 
 # View logs (last 30 lines)
-.\manage_app.ps1 -Action logs
+./manage_app.sh logs
 
-# View logs (last 100 lines)
-.\manage_app.ps1 -Action logs -Lines 100
-
-# Monitor (refresh every 5 seconds)
-.\manage_app.ps1 -Action monitor -Interval 5
+# Monitor (real-time)
+./manage_app.sh monitor
 
 # Other actions: start, stop, restart, update, health
+```
+
+### quick_update.sh
+```bash
+# Default (git pull, build, restart)
+./quick_update.sh
+
+# Skip git pull
+./quick_update.sh --skip-git-pull
 ```
 
 ## ⚡ Application Details
@@ -98,26 +112,31 @@ http://<your-vm-ip>:3000
 ## 🔍 Logs & Monitoring
 
 View logs in real-time:
-```powershell
+```bash
 pm2 logs linguistic-linguini --follow
 ```
 
 Monitor resources:
-```powershell
+```bash
 pm2 monit
+```
+
+Or use the management script:
+```bash
+./manage_app.sh monitor
 ```
 
 ## 🛠️ Troubleshooting
 
 **Application won't start?**
-```powershell
-.\manage_app.ps1 -Action logs
+```bash
+./manage_app.sh logs
 ```
 
 **Can't connect from outside?**
 Check firewall rules:
-```powershell
-Get-NetFirewallRule -DisplayName "Allow-*"
+```bash
+sudo ufw status
 ```
 
 **Full troubleshooting guide:**
@@ -125,27 +144,32 @@ See `DEPLOYMENT_GUIDE.md`
 
 ## 📝 Requirements
 
-- Windows Server 2025
-- Administrator privileges
+- Ubuntu 24.04 LTS
+- Sudo privileges
 - Internet connection (for installing packages)
-- ~30GB disk space minimum
+- ~20GB disk space minimum
 
 ## 🔄 Update Application
 
 Pull latest code and restart:
-```powershell
+```bash
 cd ..
 git pull
 
 cd deploy
-.\manage_app.ps1 -Action update
+./manage_app.sh update
+```
+
+Or use the quick update script:
+```bash
+./quick_update.sh
 ```
 
 ## ✅ Verify Installation
 
 Run health check:
-```powershell
-.\manage_app.ps1 -Action health
+```bash
+./manage_app.sh health
 ```
 
 All checks should show ✅
