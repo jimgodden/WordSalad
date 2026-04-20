@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { io, Socket } from 'socket.io-client';
-import { WORDS } from '../game/data';
+import { drawWordHand } from '../game/data';
 
 export interface WordItem {
     id: string;
@@ -16,19 +16,37 @@ interface Player {
     isHost: boolean;
 }
 
+interface WinnerDish {
+    playerId: string;
+    playerName: string;
+    avatar: string;
+    dish: WordItem[];
+    votes: number;
+}
+
+interface WinnerAnnouncement {
+    topDishes: WinnerDish[];
+    bonusAwarded: boolean;
+    totalVotes: number;
+}
+
 interface GameState {
     roomId: string | null;
     playerName: string;
     avatar: string; // Add avatar property
-    phase: 'lobby' | 'prompt' | 'construction' | 'voting' | 'results' | 'game_over';
+    phase: 'lobby' | 'prompt_selection' | 'prompt' | 'construction' | 'voting' | 'winner' | 'results' | 'game_over';
     prompt: string;
 
     // Multiplayer State
     players: Record<string, Player>;
     submissions: Record<string, WordItem[]>;
-    votes: { funny: Record<string, number>, saucy: Record<string, number> };
+    votes: Record<string, string>;
     voters: string[]; // List of socket IDs who have voted
     round: number;
+    readyForNextRound: string[];
+    promptChooserId: string | null;
+    promptSkipsRemaining: number;
+    winnerAnnouncement: WinnerAnnouncement | null;
 
     myHand: WordItem[]; // Local hand
     response: WordItem[]; // Local response construction area
@@ -41,7 +59,9 @@ interface GameState {
     createRoom: (name: string, avatar: string) => void;
     joinRoom: (roomId: string, name: string, avatar: string) => void;
     startGame: () => void;
-    startNextRound: () => void;
+    readyNextRecipe: () => void;
+    skipPrompt: () => void;
+    choosePrompt: () => void;
     endGame: () => void;
     swapHand: () => void; // Mulligan action
 
@@ -50,7 +70,7 @@ interface GameState {
     moveWordToBank: (id: string) => void;
     reorderResponse: (activeId: string, overId: string) => void;
     submitSalad: () => void;
-    vote: (category: 'funny' | 'saucy', targetId: string) => void;
+    vote: (targetId: string) => void;
     resetGame: () => void;
 }
 
@@ -65,9 +85,13 @@ export const useGameStore = create<GameState>()(
 
             players: {},
             submissions: {},
-            votes: { funny: {}, saucy: {} },
+            votes: {},
             voters: [],
             round: 1,
+            readyForNextRound: [],
+            promptChooserId: null,
+            promptSkipsRemaining: 10,
+            winnerAnnouncement: null,
 
             myHand: [],
             response: [],
@@ -78,9 +102,7 @@ export const useGameStore = create<GameState>()(
                 const { hasUsedMulligan } = get();
                 if (hasUsedMulligan) return;
 
-                // Get 70 new words
-                const shuffled = [...WORDS].sort(() => 0.5 - Math.random()).slice(0, 70);
-                const newWords = shuffled.map((text) => ({
+                const newWords = drawWordHand(70).map((text) => ({
                     id: `${text}-${Math.random().toString(36).substr(2, 9)}`,
                     text
                 }));
@@ -140,9 +162,13 @@ export const useGameStore = create<GameState>()(
                         prompt: serverState.prompt,
                         players: serverState.players,
                         submissions: serverState.submissions || {},
-                        votes: serverState.votes || { funny: {}, saucy: {} },
+                        votes: serverState.votes || {},
                         voters: serverState.voters || [],
-                        round: serverState.round || 1
+                        round: serverState.round || 1,
+                        readyForNextRound: serverState.readyForNextRound || [],
+                        promptChooserId: serverState.promptChooserId || null,
+                        promptSkipsRemaining: serverState.promptSkipsRemaining ?? 10,
+                        winnerAnnouncement: serverState.winnerAnnouncement || null
                     }));
 
                     // Replenish ONLY if we just entered construction phase
@@ -151,15 +177,17 @@ export const useGameStore = create<GameState>()(
                         const currentCount = state.myHand.length;
                         if (currentCount < 70) {
                             const needed = 70 - currentCount;
-                            const shuffled = [...WORDS].sort(() => 0.5 - Math.random()).slice(0, needed);
-                            const newWords = shuffled.map((text) => ({
+                            const newWords = drawWordHand(needed).map((text) => ({
                                 id: `${text}-${Math.random().toString(36).substr(2, 9)}`,
                                 text
                             }));
                             set({
                                 myHand: [...state.myHand, ...newWords],
-                                response: []
+                                response: [],
+                                hasUsedMulligan: false
                             });
+                        } else {
+                            set({ response: [], hasUsedMulligan: false });
                         }
                     }
                 });
@@ -192,10 +220,22 @@ export const useGameStore = create<GameState>()(
                 console.log('📡 Emitted start_game');
             },
 
-            startNextRound: () => {
+            readyNextRecipe: () => {
                 const { socket, roomId } = get();
                 if (!socket || !roomId) return;
                 socket.emit('next_round', roomId);
+            },
+
+            skipPrompt: () => {
+                const { socket, roomId } = get();
+                if (!socket || !roomId) return;
+                socket.emit('skip_prompt', roomId);
+            },
+
+            choosePrompt: () => {
+                const { socket, roomId } = get();
+                if (!socket || !roomId) return;
+                socket.emit('choose_prompt', roomId);
             },
 
             endGame: () => {
@@ -250,14 +290,26 @@ export const useGameStore = create<GameState>()(
                 set({ response: [] });
             },
 
-            vote: (category, targetId) => {
+            vote: (targetId) => {
                 const { socket, roomId } = get();
                 if (!socket || !roomId) return;
-                socket.emit('vote', { roomId, category, targetId });
+                socket.emit('vote', { roomId, targetId });
             },
 
             resetGame: () => {
-                set({ response: [], myHand: [], roomId: null, playerName: '', hasUsedMulligan: false });
+                set({
+                    response: [],
+                    myHand: [],
+                    roomId: null,
+                    playerName: '',
+                    hasUsedMulligan: false,
+                    readyForNextRound: [],
+                    promptChooserId: null,
+                    promptSkipsRemaining: 10,
+                    winnerAnnouncement: null,
+                    votes: {},
+                    voters: []
+                });
             }
         }),
         {

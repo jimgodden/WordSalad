@@ -1,186 +1,149 @@
-export const WORDS = [
-    // Verbs (Action)
-    "lick", "slap", "poke", "wiggle", "moisturize", "explode", "gurgle", "flap", "squirt", "jiggle",
-    "stroke", "caress", "nibble", "thrust", "smack", "grind", "ooze", "drip", "squish", "clench",
-    "rub", "sniff", "gobble", "swallow", "burp", "fart", "vomit", "sneeze", "twitch", "spasm",
-    "gyrate", "undulate", "pulsate", "throb", "quiver", "shudder", "convulse", "secrete", "excrete",
-    "defecate", "urinate", "ejaculate", "penetrate", "violate", "molest", "harass", "torture", "mutilate",
-    "devour", "consume", "digest", "regurgitate", "ferment", "rot", "decay", "decompose", "fester",
-    "spoil", "curdle", "coagulate", "clot", "congeal", "thicken", "harden", "stiffen", "erect",
-    "inflate", "expand", "swell", "bloat", "distend", "protrude", "bulge", "sag", "droop",
-    "dangle", "flop", "wobble", "shaking", "trembling", "vibrating", "bouncing", "jiggling", "sliding",
-    "slipping", "oozing", "dripping", "sucking", "blowing", "biting", "chewing", "gnawing", "crunching",
-    "scratch", "scrape", "claw", "tear", "rip", "shred", "crush", "smash", "bash", "batter",
-    "bludgeon", "pummel", "beat", "whip", "flog", "spank", "paddle", "cane", "lash", "strike",
-    "punch", "kick", "stomp", "trample", "crush", "squeeze", "pinch", "twist", "yank", "pull",
-    "drag", "push", "shove", "thrust", "jab", "stab", "slice", "cut", "chop", "dice",
-    "mince", "grind", "blend", "puree", "liquefy", "melt", "dissolve", "evaporate", "vaporize",
-    "combust", "burn", "scorch", "sear", "char", "roast", "bake", "fry", "boil", "steam",
-    "poach", "simmer", "stew", "braise", "grill", "barbecue", "smoke", "cure", "salt", "pickle",
-    "marinate", "season", "spice", "flavor", "taste", "smell", "scent", "sniff", "inhale", "exhale",
-    "breathe", "gasp", "pant", "wheeze", "choke", "cough", "gag", "retch", "heave", "spit",
-    "drool", "slobber", "dribble", "leak", "seep", "drain", "flow", "gush", "spurt", "spray",
-    "hump", "mount", "ride", "straddle", "stroke", "rub", "massage", "knead", "squeeze", "fondle",
-    "grope", "touch", "feel", "handle", "manipulate", "manhandle", "abuse", "misuse", "exploit",
-    "cheat", "deceive", "trick", "fool", "scam", "con", "dupe", "hoodwink", "bamboozle",
-    "confuse", "befuddle", "perplex", "puzzle", "baffle", "mystify", "bewilder", "disorient", "distract",
-    "disturb", "disrupt", "interrupt", "interfere", "meddle", "tamper", "tinker", "fiddle", "toy",
-
-    // Nouns (Objects/Concepts)
-    "spatula", "moisture", "clown", "sausage", "explosion", "mother", "taxes", "diapers", "bacon",
-    "yeast", "fungus", "mold", "slime", "mucus", "phlegm", "snot", "scab", "pus", "boil",
-    "blister", "wart", "tumor", "cyst", "polyp", "hemorrhoid", "fistula", "ulcer", "abscess",
-    "carbuncle", "pimple", "zit", "acne", "blackhead", "whitehead", "rash", "hives", "eczema",
-    "psoriasis", "dandruff", "lice", "maggots", "worms", "roaches", "rats", "mice", "vermin",
-    "sewage", "sludge", "scum", "trash", "garbage", "rubbish", "refuse", "waste", "filth",
-    "dirt", "grime", "muck", "mud", "mire", "bog", "swamp", "marsh", "cesspool", "latrine",
-    "toilet", "urinal", "bidet", "commode", "bedpan", "chamberpot", "outhouse", "dungeon", "torture",
-    "shackles", "chains", "whips", "branding", "iron", "spikes", "nails", "screws", "blades",
-    "knives", "swords", "axes", "saws", "drills", "hammers", "pliers", "wrenches", "screwdrivers",
-    "clamps", "vises", "chainsaws", "machetes", "cleavers", "scalpels", "needles", "syringes", "catheters",
-    "enemas", "suppositories", "tampons", "pads", "diapers", "condoms", "lubricant", "lotion", "ointment",
-    "salve", "balm", "cream", "gel", "paste", "wax", "grease", "oil", "fat", "lard",
-    "butter", "margarine", "shortening", "tallow", "suet", "drippings", "gravy", "sauce", "juice",
-    "fluid", "liquid", "secretion", "excretion", "discharge", "effluent", "emission", "output", "product",
-    "byproduct", "waste", "residue", "remains", "leavings", "scraps", "crumbs", "dregs", "sediment",
-    "sludge", "silt", "ooze", "goop", "gunk", "muck", "mire", "slush", "slurry",
-    "puddle", "pool", "spill", "stain", "soak", "drench", "sop", "sponge", "wipe",
-    "rag", "cloth", "towel", "tissue", "paper", "cardboard", "plastic", "rubber", "latex",
-    "leather", "vinyl", "nylon", "polyester", "silk", "satin", "velvet", "wool", "cotton",
-    "fur", "feathers", "hair", "skin", "hide", "pelt", "fleece", "scales", "shell",
-    "bone", "horn", "antler", "tusk", "claw", "nail", "tooth", "beak", "bill",
-    "snout", "muzzle", "nose", "trunk", "tail", "fin", "flipper", "wing", "leg",
-    "foot", "paw", "hoof", "hand", "finger", "thumb", "toe", "eye", "ear",
-    "mouth", "tongue", "lip", "gum", "throat", "neck", "shoulder", "arm", "elbow",
-    "wrist", "chest", "breast", "nipple", "belly", "navel", "back", "spine", "hip",
-    "waist", "butt", "groin", "thigh", "knee", "shin", "calf", "ankle", "heel",
-
-    // Adjectives
-    "moist", "soggy", "damp", "wet", "sticky", "clammy", "slimy", "greasy", "oily",
-    "crusty", "crunchy", "flaky", "dusty", "powdery", "gritty", "sandy", "coarse", "rough",
-    "smooth", "slick", "slippery", "velvety", "silky", "soft", "hard", "stiff", "rigid",
-    "limp", "flaccid", "saggy", "droopy", "loose", "tight", "firm", "taught", "tense",
-    "bloated", "swollen", "inflamed", "infected", "diseased", "rotten", "spoiled", "rancid", "putrid",
-    "foul", "nasty", "gross", "disgusting", "revolting", "repulsive", "vile", "wicked", "evil",
-    "sinister", "malevolent", "malicious", "cruel", "brutal", "savage", "barbaric", "primitive", "ancient",
-    "modern", "futuristic", "alien", "strange", "bizarre", "weird", "freaky", "kinky", "fetish",
-    "taboo", "forbidden", "illegal", "criminal", "corrupt", "depraved", "perverted", "immoral", "unethical",
-    "sinful", "blasphemous", "sacrilegious", "heretical", "godless", "faithless", "hopeless", "despairing", "depressed",
-    "anxious", "nervous", "scared", "afraid", "terrified", "petrified", "horrified", "shocked", "stunned",
-    "amazed", "astonished", "surprised", "confused", "bewildered", "perplexed", "puzzled", "baffled", "lost",
-    "lonely", "alone", "isolated", "abandoned", "rejected", "unwanted", "unloved", "hated", "despised",
-    "loathed", "detested", "abhorred", "scorned", "mocked", "ridiculed", "insulted", "offended", "hurt",
-    "wounded", "injured", "damaged", "broken", "shattered", "destroyed", "ruined", "wrecked", "demolished",
-    "obliterated", "annihilated", "extinct", "dead", "dying", "lifeless", "inanimate", "hollow", "empty",
-    "vacant", "blank", "numb", "cold", "freezing", "frozen", "icy", "chilly", "cool",
-    "warm", "hot", "burning", "scorching", "searing", "blazing", "fiery", "flaming", "glowing",
-    "bright", "shiny", "sparkling", "glittering", "shimmering", "dull", "dim", "dark", "gloomy",
-    "shadowy", "murky", "cloudy", "foggy", "misty", "hazy", "blurry", "fuzzy", "clear",
-    "transparent", "translucent", "opaque", "solid", "liquid", "gaseous", "vaporous", "ethereal", "ghostly",
-    "spectral", "haunted", "possessed", "cursed", "jinxed", "lucky", "unlucky", "fortunate", "unfortunate",
-
-    // Body Parts (Anatomy)
-    "elbow", "knee", "toe", "finger", "thumb", "knuckle", "wrist", "ankle", "heel",
-    "sole", "arch", "shin", "calf", "thigh", "buttock", "hip", "waist", "navel",
-    "belly", "chest", "nipple", "breast", "shoulder", "neck", "chin", "cheek", "nose",
-    "ear", "eye", "eyebrow", "eyelash", "hair", "scalp", "tongue", "tooth", "gum",
-    "lip", "throat", "spine", "rib", "pelvis", "bone", "muscle", "tendon", "ligament",
-    "nerve", "vein", "artery", "heart", "lung", "stomach", "liver", "kidney", "bladder",
-    "intestine", "colon", "rectum", "anus", "sphincter", "genitals", "flesh", "skin", "blood",
-    "sweat", "tears", "saliva", "urine", "feces", "semen", "vomit", "bile", "phlegm",
-    "brain", "skull", "jaw", "mandible", "clavicle", "scapula", "humerus", "radius", "ulna",
-    "femur", "patella", "tibia", "fibula", "vertebra", "sacrum", "coccyx", "cranium", "sternum",
-    "cartilage", "marrow", "plasma", "platelet", "cell", "tissue", "organ", "gland", "hormone",
-    "enzyme", "protein", "vitamin", "mineral", "nutrient", "fat", "sugar", "salt", "acid",
-    "base", "alkali", "toxin", "poison", "venom", "antidote", "cure", "remedy", "medicine",
-    "drug", "pill", "tablet", "capsule", "syringe", "injection", "vaccine", "antibiotic", "steroid",
-    "narcotic", "stimulant", "sedative", "hallucinogen", "anesthetic", "painkiller", "opiate", "addict", "junkie",
-
-    // People/Roles
-    "governor", "senator", "president", "dictator", "king", "queen", "prince", "princess", "duke",
-    "duchess", "baron", "baroness", "count", "countess", "knight", "squire", "peasant", "serf",
-    "slave", "master", "mistress", "servant", "maid", "butler", "cook", "chef", "waiter",
-    "waitress", "bartender", "customer", "client", "guest", "host", "hostess", "visitor", "tourist",
-    "stranger", "foreigner", "alien", "immigrant", "refugee", "exile", "outcast", "hermit", "monk",
-    "nun", "priest", "rabbi", "imam", "guru", "shaman", "witch", "wizard", "sorcerer",
-    "sorceress", "mage", "warlock", "necromancer", "vampire", "werewolf", "zombie", "ghost", "spirit",
-    "demon", "devil", "angel", "god", "goddess", "deity", "idol", "icon", "hero",
-    "villain", "monster", "beast", "creature", "mutant", "freak", "weirdo", "creep", "pervert",
-    "deviant", "criminal", "felon", "convict", "prisoner", "inmate", "jailbird", "thief", "robber",
-    "burglar", "mugger", "killer", "murderer", "assassin", "sniper", "soldier", "warrior", "fighter",
-    "mercenary", "spy", "agent", "detective", "cop", "police", "officer", "sheriff", "deputy",
-    "judge", "jury", "lawyer", "attorney", "prosecutor", "defendant", "witness", "victim", "suspect",
-    "doctor", "nurse", "surgeon", "dentist", "patient", "sick", "ill", "invalid", "cripple",
-    "lunatic", "maniac", "psycho", "sociopath", "psychopath", "narcissist", "sadist", "masochist", "fetishist",
-
-    // Food
-    "smoothie", "milkshake", "juice", "soda", "water", "milk", "coffee", "tea", "beer",
-    "wine", "liquor", "vodka", "whiskey", "rum", "gin", "tequila", "brandy", "champagne",
-    "cocktail", "mocktail", "slushie", "syrup", "honey", "jam", "jelly", "marmalade", "butter",
-    "oil", "vinegar", "sauce", "ketchup", "mustard", "mayonnaise", "relish", "salsa", "guacamole",
-    "hummus", "dip", "dressing", "gravy", "soup", "stew", "chili", "curry", "noodles",
-    "pasta", "rice", "beans", "peas", "lentils", "corn", "potatoes", "carrots", "broccoli",
-    "spinach", "lettuce", "kale", "cabbage", "onions", "garlic", "peppers", "tomatoes", "cucumbers",
-    "pickles", "olives", "mushrooms", "cheese", "yogurt", "cream", "ice cream", "cake", "pie",
-    "cookies", "brownies", "donuts", "muffins", "bagels", "bread", "toast", "pancakes", "waffles",
-    "biscuit", "scone", "croissant", "danish", "strudel", "tart", "custard", "pudding", "gelatin",
-    "mousse", "candy", "chocolate", "caramel", "toffee", "fudge", "truffle", "bonbon", "lollipop",
-    "gum", "mint", "taffy", "marshmallow", "popcorn", "chips", "pretzels", "crackers", "nuts",
-    "peanuts", "almonds", "cashews", "wilnuts", "pecans", "pistachios", "hazelnuts", "macadamias", "seeds",
-    "sunflower", "pumpkin", "sesame", "poppy", "flax", "chia", "hemp", "granola", "oats",
-    "wheat", "barley", "rye", "cornmeal", "flour", "yeast", "dough", "batter", "crust",
-    "meat", "beef", "pork", "lamb", "veal", "venison", "chicken", "turkey", "duck",
-    "goose", "quail", "pheasant", "fish", "salmon", "tuna", "cod", "halibut", "trout",
-    "sardine", "anchovy", "shrimp", "prawn", "crab", "lobster", "crayfish", "clam", "mussel",
-    "oyster", "scallop", "squid", "octopus", "snail", "frog", "turtle", "alligator", "snake",
-
-    // Animals
-    "cat", "dog", "mouse", "rat", "hamster", "guinea pig", "rabbit", "squirrel", "chipmunk",
-    "beaver", "porcupine", "skunk", "raccoon", "opossum", "mole", "bat", "fox", "wolf",
-    "coyote", "bear", "lion", "tiger", "leopard", "jaguar", "cheetah", "panther", "lynx",
-    "bobcat", "cougar", "mountain lion", "wildcat", "domestic cat", "feral cat", "kitten", "puppy", "cub",
-    "calf", "foal", "colt", "filly", "lamb", "kid", "piglet", "chick", "duckling",
-    "gosling", "cygnet", "fawn", "joey", "tadpole", "caterpillar", "larva", "pupa", "nymph",
-    "dragonfly", "wasp", "hornet", "bee", "ant", "termite", "beetle", "cockroach", "cricket",
-    "grasshopper", "locust", "mantis", "cicada", "flea", "louse", "mite", "tick", "spider",
-    "scorpion", "centipede", "millipede", "worm", "slug", "snail", "leech", "jellyfish", "anemone",
-    "coral", "sponge", "starfish", "urchin", "cucumber", "dollar", "shell", "conch", "nautilus",
-    "squid", "octopus", "cuttlefish", "shark", "ray", "skate", "eel", "whale", "dolphin",
-    "porpoise", "seal", "lion", "walrus", "manatee", "dugong", "penguin", "puffing", "gull",
-    "albatross", "pelican", "cormorant", "stork", "heron", "egret", "flamingo", "crane", "swan",
-    "goose", "duck", "eagle", "hawk", "falcon", "owl", "vulture", "parrot", "cockatoo",
-
-    // Abstract
-    "failure", "disappointment", "regret", "shame", "guilt", "fear", "anxiety", "panic", "terror",
-    "horror", "dread", "despair", "misery", "suffering", "pain", "agony", "torture", "torment",
-    "anguish", "grief", "sorrow", "sadness", "depression", "melancholy", "loneliness", "isolation", "rejection",
-    "abandonment", "betrayal", "treachery", "deceit", "lies", "falsehood", "dishonesty", "fraud", "corruption",
-    "injustice", "oppression", "tyranny", "dictatorship", "slavery", "war", "violence", "conflict", "battle",
-    "fight", "struggle", "combat", "destruction", "devastation", "ruin", "collapse", "downfall", "end",
-    "death", "dying", "killed", "murdered", "slaughtered", "massacred", "executed", "assassinated", "suicide",
-    "homicide", "genocide", "warfare", "casualty", "victim", "martyr", "saint", "sinner", "redemption",
-    "salvation", "damnation", "hell", "heaven", "purgatory", "limbo", "afterlife", "eternity", "infinity",
-    "void", "abyss", "nothingness", "chaos", "order", "law", "rule", "power", "control",
-    "authority", "command", "dominion", "empire", "kingdom", "realm", "domain", "territory", "border",
-    "boundary", "limit", "edge", "fringe", "margin", "periphery", "center", "core", "heart",
-    "soul", "spirit", "mind", "consciousness", "awareness", "perception", "reality", "illusion", "dream",
-    "nightmare", "fantasy", "fiction", "myth", "legend", "fable", "tale", "story", "narrative",
-
-    // Random Funny / Slang / Brainrot
-    "bamboozle", "shenanigans", "tomfoolery", "malarkey", "hogwash", "balderdash", "poppycock", "gibberish", "nonsense",
-    "gobbledygook", "flapdoodle", "claptrap", "drivel", "twaddle", "bosh", "pish-posh", "fiddlesticks", "humbug",
-    "scuttlebutt", "codswallop", "kerfuffle", "brouhaha", "hullabaloo", "commotion", "ruckus", "donnybrook", "fracas",
-    "melee", "scuffle", "tussle", "brawl", "skirmish", "clash", "confrontation", "encounter", "incident",
-    "accident", "mishap", "blunder", "mistake", "error", "fault", "flaw", "defect", "imperfection",
-    "yeet", "yoink", "glizzy", "sus", "cringe", "based", "chad", "simp", "karen",
-    "zoomer", "boomer", "doomer", "bloomer", "coomer", "gooner", "mewing", "skibidi", "gyatt",
-    "rizz", "fanum", "tax", "ohio", "sigma", "alpha", "beta", "omega", "grindset",
-    "hustle", "gaslight", "gatekeep", "girlboss", "mansplain", "woke", "cancelled", "triggered", "snowflake",
-    "libtard", "maga", "covfefe", "bigly", "yuge", "fake", "news", "hoax", "conspiracy",
-    "illuminati", "aliens", "ufo", "bigfoot", "yeti", "nessie", "chupacabra", "cryptid", "monster",
-    "balls", "nuts", "shaft", "tip", "taint", "gooch", "chode", "boner", "wood",
-    "stiffy", "hardon", "erection", "climax", "orgasm", "cum", "jizz", "spunk", "load",
-    "nut", "seed", "juice", "cream", "sauce", "squirt", "gush", "flow", "drip",
-    "wet", "moist", "damp", "soggy", "soaked", "drenched", "flooded", "overflowing", "spilling",
-    "leaking", "dripping", "oozing", "seeping", "bleeding", "draining", "emptying", "pouring", "raining"
+const CONVERSATIONAL_BASICS = [
+    'a', 'an', 'the', 'this', 'that', 'these', 'those', 'my', 'your', 'our',
+    'their', 'his', 'her', 'its', 'some', 'any', 'every', 'each', 'one', 'two',
+    'three', 'many', 'few', 'more', 'less', 'very', 'really', 'just', 'still', 'almost',
+    'always', 'never', 'maybe', 'probably', 'definitely', 'suddenly', 'actually', 'literally', 'basically', 'honestly',
+    'and', 'but', 'or', 'so', 'because', 'if', 'then', 'while', 'although', 'however',
+    'also', 'instead', 'besides', 'before', 'after', 'during', 'until', 'since', 'with', 'without',
+    'for', 'from', 'into', 'onto', 'over', 'under', 'through', 'around', 'behind', 'beside',
+    'inside', 'outside', 'near', 'far', 'up', 'down', 'off', 'on', 'in', 'out'
 ];
+
+const COMMON_VERBS = [
+    'am', 'is', 'are', 'was', 'were', 'be', 'being', 'been', 'have', 'has',
+    'had', 'do', 'does', 'did', 'can', 'could', 'will', 'would', 'should', 'might',
+    'must', 'make', 'made', 'get', 'got', 'give', 'gave', 'take', 'took', 'put',
+    'keep', 'kept', 'find', 'found', 'lose', 'lost', 'tell', 'told', 'say', 'said',
+    'ask', 'asked', 'call', 'called', 'bring', 'brought', 'leave', 'left', 'need', 'needed',
+    'want', 'wanted', 'love', 'hate', 'like', 'liked', 'know', 'knew', 'think', 'thought',
+    'look', 'looked', 'watch', 'watched', 'hear', 'heard', 'feel', 'felt', 'smell', 'taste',
+    'eat', 'ate', 'drink', 'drank', 'cook', 'cooked', 'bake', 'baked', 'fry', 'fried',
+    'boil', 'grill', 'mix', 'stir', 'flip', 'drop', 'spill', 'grab', 'carry', 'open',
+    'close', 'push', 'pull', 'throw', 'catch', 'run', 'walk', 'dance', 'sing', 'laugh',
+    'cry', 'scream', 'whisper', 'yell', 'argue', 'apologize', 'panic', 'celebrate', 'cheer', 'wave',
+    'trip', 'slip', 'crash', 'float', 'zoom', 'sneak', 'hide', 'blink', 'stare', 'pose'
+];
+
+const HELPFUL_ADJECTIVES = [
+    'funny', 'weird', 'awkward', 'dramatic', 'tiny', 'giant', 'mini', 'huge', 'loud', 'quiet',
+    'shiny', 'sparkly', 'dusty', 'messy', 'clean', 'crispy', 'chewy', 'crunchy', 'soggy', 'spicy',
+    'sweet', 'salty', 'bitter', 'fancy', 'cheap', 'legendary', 'average', 'sad', 'happy', 'angry',
+    'sleepy', 'hungry', 'confused', 'suspicious', 'heroic', 'cowardly', 'polite', 'rude', 'chaotic', 'calm',
+    'goofy', 'serious', 'wild', 'mysterious', 'backwards', 'upside-down', 'broken', 'fresh', 'stale', 'greasy',
+    'cold', 'hot', 'warm', 'frozen', 'toasted', 'burnt', 'glorious', 'tragic', 'unexpected', 'embarrassing',
+    'curious', 'nosy', 'smug', 'nervous', 'brave', 'clumsy', 'perfect', 'terrible', 'magical', 'haunted',
+    'fake', 'real', 'invisible', 'secret', 'public', 'portable', 'professional', 'questionable', 'speedy', 'slow'
+];
+
+const REACTION_WORDS = [
+    'hello', 'hi', 'hey', 'please', 'thanks', 'sorry', 'wow', 'oops', 'yikes', 'uh-oh',
+    'nope', 'yep', 'okay', 'fine', 'great', 'amazing', 'terrible', 'help', 'listen', 'wait',
+    'stop', 'go', 'yes', 'no', 'maybe', 'who', 'what', 'when', 'where', 'why',
+    'how', 'because', 'anyway', 'meanwhile', 'apparently', 'somehow', 'clearly', 'obviously', 'frankly', 'today',
+    'tonight', 'tomorrow', 'yesterday', 'soon', 'later', 'first', 'second', 'last', 'next', 'again'
+];
+
+const PEOPLE_AND_ROLES = [
+    'chef', 'judge', 'grandma', 'uncle', 'neighbor', 'coworker', 'roommate', 'barista', 'teacher', 'principal',
+    'wizard', 'pirate', 'astronaut', 'dentist', 'librarian', 'coach', 'detective', 'intern', 'boss', 'clown',
+    'villain', 'hero', 'cashier', 'driver', 'tourist', 'influencer', 'comedian', 'magician', 'cowboy', 'alien',
+    'robot', 'cat', 'dog', 'hamster', 'pigeon', 'raccoon', 'goose', 'llama', 'dolphin', 'shark',
+    'penguin', 'dragon', 'ghost', 'goblin', 'toddler', 'teenager', 'parent', 'sibling', 'bestie', 'stranger'
+];
+
+const PLACES_AND_SITUATIONS = [
+    'kitchen', 'office', 'basement', 'garage', 'classroom', 'cafeteria', 'driveway', 'elevator', 'bathroom', 'rooftop',
+    'subway', 'parking lot', 'farm', 'moon', 'museum', 'circus', 'mall', 'airport', 'wedding', 'funeral',
+    'birthday', 'picnic', 'rehearsal', 'karaoke', 'traffic', 'meeting', 'group chat', 'vacation', 'reunion', 'podcast'
+];
+
+const EVERYDAY_NOUNS = [
+    'phone', 'charger', 'remote', 'blanket', 'lamp', 'sofa', 'pillow', 'sock', 'spoon', 'fork',
+    'knife', 'plate', 'cup', 'mug', 'bowl', 'napkin', 'menu', 'receipt', 'coupon', 'calendar',
+    'keyboard', 'mouse', 'screen', 'microphone', 'camera', 'door', 'window', 'bucket', 'ladder', 'helmet',
+    'backpack', 'notebook', 'marker', 'trophy', 'candle', 'balloon', 'guitar', 'trumpet', 'drum', 'kazoo',
+    'toaster', 'microwave', 'blender', 'fridge', 'freezer', 'thermos', 'vacuum', 'umbrella', 'scooter', 'ticket'
+];
+
+const FOOD_AND_KITCHEN_WORDS = [
+    'pasta', 'pizza', 'burger', 'sandwich', 'taco', 'burrito', 'salad', 'soup', 'waffle', 'pancake',
+    'omelet', 'casserole', 'dumpling', 'meatball', 'noodle', 'cookie', 'brownie', 'cupcake', 'donut', 'muffin',
+    'pickle', 'mustard', 'ketchup', 'mayonnaise', 'gravy', 'syrup', 'jelly', 'butter', 'cheese', 'yogurt',
+    'milk', 'coffee', 'tea', 'soda', 'juice', 'lemonade', 'smoothie', 'ice cream', 'popcorn', 'pretzel',
+    'toast', 'bagel', 'croissant', 'rice', 'bean', 'onion', 'garlic', 'tomato', 'potato', 'pepper',
+    'lettuce', 'broccoli', 'carrot', 'mushroom', 'olive', 'banana', 'apple', 'grape', 'watermelon', 'strawberry',
+    'chicken', 'beef', 'bacon', 'shrimp', 'salmon', 'egg', 'wafer', 'cracker', 'nacho', 'pudding'
+];
+
+const FUNNY_NOUNS = [
+    'disaster', 'masterpiece', 'scheme', 'plan', 'rumor', 'excuse', 'speech', 'announcement', 'receipt', 'review',
+    'curse', 'blessing', 'vibe', 'mood', 'plot twist', 'secret', 'mistake', 'legend', 'scandal', 'mystery',
+    'meme', 'side quest', 'chaos', 'drama', 'buffet', 'reward', 'penalty', 'meltdown', 'breakdown', 'comeback',
+    'miracle', 'nightmare', 'deal', 'bargain', 'fashion show', 'joke', 'punchline', 'caption', 'nickname', 'warning'
+];
+
+const USEFUL_PRONOUNS = [
+    'I', 'you', 'we', 'they', 'he', 'she', 'it', 'someone', 'nobody', 'everybody',
+    'friend', 'enemy', 'captain', 'manager', 'grandpa', 'cousin', 'babysitter', 'landlord', 'roommate', 'celebrity'
+];
+
+const PLAYFUL_WORDS = [
+    'vibes', 'legend', 'chaos', 'awkward', 'cringe', 'iconic', 'retro', 'dramatic', 'sneaky', 'goober',
+    'bonkers', 'bizarre', 'wobbly', 'zoomy', 'fancy', 'sus', 'rizz', 'goblin', 'gremlin', 'banana-peel',
+    'dingus', 'goofball', 'snacc', 'brunch', 'giggle', 'boop', 'yeet', 'yoink', 'bonk', 'skedaddle'
+];
+
+const WORD_GROUPS = [
+    { words: CONVERSATIONAL_BASICS, weight: 0.2 },
+    { words: COMMON_VERBS, weight: 0.2 },
+    { words: HELPFUL_ADJECTIVES, weight: 0.14 },
+    { words: REACTION_WORDS, weight: 0.1 },
+    { words: PEOPLE_AND_ROLES, weight: 0.08 },
+    { words: PLACES_AND_SITUATIONS, weight: 0.05 },
+    { words: EVERYDAY_NOUNS, weight: 0.08 },
+    { words: FOOD_AND_KITCHEN_WORDS, weight: 0.08 },
+    { words: FUNNY_NOUNS, weight: 0.04 },
+    { words: USEFUL_PRONOUNS, weight: 0.01 },
+    { words: PLAYFUL_WORDS, weight: 0.02 }
+];
+
+export const WORDS = WORD_GROUPS.flatMap(({ words }) => words);
+
+const shuffle = <T,>(items: T[]) => {
+    const copy = [...items];
+
+    for (let index = copy.length - 1; index > 0; index -= 1) {
+        const swapIndex = Math.floor(Math.random() * (index + 1));
+        [copy[index], copy[swapIndex]] = [copy[swapIndex], copy[index]];
+    }
+
+    return copy;
+};
+
+export const drawWordHand = (count: number) => {
+    const chosenWords = new Set<string>();
+    const hand: string[] = [];
+
+    WORD_GROUPS.forEach(({ words, weight }) => {
+        const targetCount = Math.min(words.length, Math.floor(count * weight));
+        shuffle(words)
+            .filter((word) => !chosenWords.has(word))
+            .slice(0, targetCount)
+            .forEach((word) => {
+                chosenWords.add(word);
+                hand.push(word);
+            });
+    });
+
+    if (hand.length < count) {
+        shuffle(WORDS)
+            .filter((word) => !chosenWords.has(word))
+            .slice(0, count - hand.length)
+            .forEach((word) => {
+                chosenWords.add(word);
+                hand.push(word);
+            });
+    }
+
+    return shuffle(hand).slice(0, count);
+};

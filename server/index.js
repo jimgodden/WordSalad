@@ -33,68 +33,285 @@ const disconnectTimeouts = new Map();
 
 // Linguistic Linguini Data (Simplifying for server to just hold state, not generate logic yet)
 const PROMPTS = [
-    "Describe the worst possible first date.",
-    "What did the alien say to the cow?",
-    "Write a rejection letter from Hogwarts.",
-    "Explain why you were fired from the zoo.",
-    "What's the secret ingredient in grandma's cookies?",
-    "Describe your mood right now using only food words.",
-    "The reason dinosaurs really went extinct.",
-    "What does the fox actually say?",
-    "The worst thing to hear during surgery.",
-    "Proposed new slogan for NASA.",
-    "Why the chicken definitively crossed the road.",
-    "A rejected Crayola Crayon color.",
-    "The worst theme for a children's birthday party.",
-    "Things you shouldn't say at a funeral.",
-    "The real reason the internet was invented.",
-    "What your pet really thinks of you.",
-    "The title of your autobiography.",
-    "A review of the worst restaurant ever.",
-    "The last text message you sent, but make it ominous.",
-    "Describe a new Olympic sport based on your lazy Sunday.",
-    "The worst pickup line in history.",
-    "What's really in Area 51?",
-    "A tweet from a caveman.",
-    "The plot of a movie that got a 0% on Rotten Tomatoes.",
-    "Your superhero name and useless power.",
-    "A fortune cookie fortune that implies immediate danger.",
-    "The reason you were kicked out of IKEA.",
-    "What the Mona Lisa is smiling about.",
-    "A rejected slogan for McDonald's.",
-    "The worst advice to give a new parent.",
-    "What you would do if you were invisible for 5 minutes.",
-    "The worst thing to find in your burrito.",
-    "A Yelp review for Earth.",
-    "The name of a band made up of grandmas.",
-    "What really happens in the Bermuda Triangle.",
-    "The worst way to propose marriage.",
-    "A conspiracy theory about pigeons.",
-    "The first sentence of the worst novel ever written.",
-    "What you would say to your past self.",
-    "The worst job interview answer.",
-    "A rejected flavor of ice cream.",
-    "The real reason the Titanic sank.",
-    "What's in the box?",
-    "The worst thing to say to a police officer.",
-    "A tagline for a horror movie about socks.",
-    "The reason you failed your driving test.",
-    "What you would bring to a desert island (wrong answers only).",
-    "The worst gift to give on Valentine's Day.",
-    "A rejected name for a new planet.",
-    "The title of a self-help book written by a cat.",
-    "What really happened to the socks in the dryer.",
-    "The worst possible pizza topping."
+    "The message your food delivery driver will never forget.",
+    "A terrible slogan for a breakfast cereal.",
+    "What your pet says when you leave the room.",
+    "The worst possible thing to hear from your dentist.",
+    "A text message from a very dramatic raccoon.",
+    "The real reason the meeting could have been an email.",
+    "A rejected menu item at a fancy restaurant.",
+    "The title of a movie that should not exist.",
+    "What a grandma says before absolute chaos begins.",
+    "The world's least inspiring motivational speech.",
+    "A bad excuse for being late to work.",
+    "What the moon would post on social media.",
+    "The worst slogan for a dating app.",
+    "A warning label on a suspicious snack.",
+    "What your fridge thinks about your life choices.",
+    "The first line of a very disappointing superhero movie.",
+    "A wedding toast that gets cut off immediately.",
+    "What the cashier says right before disaster.",
+    "A children's book title that alarms everyone.",
+    "The secret ingredient in a cursed family recipe.",
+    "What a pirate orders at a coffee shop.",
+    "The worst name for a new theme park ride.",
+    "A voice mail from your chaotic roommate.",
+    "What the office microwave whispers at midnight.",
+    "A terrible headline for tomorrow's news.",
+    "The least convincing apology ever delivered.",
+    "A rejected flavor of sparkling water.",
+    "What your group chat would say at your funeral.",
+    "The real reason the Wi-Fi stopped working.",
+    "A side effect your doctor forgot to mention.",
+    "The worst thing to hear from a flight attendant.",
+    "A suspicious fortune cookie message.",
+    "The snack that got banned from school forever.",
+    "Why the chef was asked to leave the wedding.",
+    "A magician's final and very bad idea.",
+    "What the pigeon on the sidewalk knows about you.",
+    "A product review written by an angry ghost.",
+    "The reason your landlord is suddenly calling.",
+    "A bad nickname for a superhero.",
+    "What the principal says on karaoke night.",
+    "A sentence that should never begin a first date.",
+    "The item nobody wanted in the office potluck.",
+    "What the robot says when it becomes emotional.",
+    "The worst thing to hear during a yoga class.",
+    "A rejected state fair food.",
+    "What the clown says to calm everyone down.",
+    "The least romantic proposal in human history.",
+    "A podcast episode that ends in immediate regret.",
+    "What your sandwich is hiding from you.",
+    "The title of a self-help book written by a goose.",
+    "A sign that your brunch has gone too far.",
+    "What the elevator announces before chaos.",
+    "The thing your socks are plotting.",
+    "A very bad reason to call your boss on a Sunday.",
+    "What really happened at the company picnic.",
+    "The worst possible pizza topping.",
+    "A museum plaque for a very embarrassing object.",
+    "What the wizard says after burning the toast.",
+    "The theme of the saddest birthday party ever.",
+    "A terrible replacement name for coffee.",
+    "The emergency announcement nobody was prepared for."
 ];
 
-// Helper to generate initial state
+const WINNER_REVEAL_MS = 5000;
+const PROMPT_READ_MS = 5000;
+const MAX_PROMPT_SKIPS = 10;
+
 const createGameState = () => ({
     phase: 'lobby',
     prompt: '',
-    players: {}, // socketId -> { name, hand: [], score: 0, isHost: false }
-    submissions: {}, // socketId -> WordItem[]
-    votes: { funny: {}, saucy: {} } // category -> { candidateId -> count }
+    players: {},
+    playerOrder: [],
+    chooserIndex: 0,
+    submissions: {},
+    votes: {},
+    voters: [],
+    round: 1,
+    readyForNextRound: [],
+    promptChooserId: null,
+    promptSkipsRemaining: MAX_PROMPT_SKIPS,
+    winnerAnnouncement: null
 });
+
+const getPromptChoices = (exclude = []) => {
+    const available = PROMPTS.filter((prompt) => !exclude.includes(prompt));
+    const source = available.length > 0 ? available : PROMPTS;
+    return source[Math.floor(Math.random() * source.length)];
+};
+
+const normalizeChooserIndex = (room) => {
+    if (room.playerOrder.length === 0) {
+        room.chooserIndex = 0;
+        room.promptChooserId = null;
+        return;
+    }
+
+    if (room.chooserIndex >= room.playerOrder.length) {
+        room.chooserIndex = room.chooserIndex % room.playerOrder.length;
+    }
+
+    if (room.chooserIndex < 0) {
+        room.chooserIndex = 0;
+    }
+
+    room.promptChooserId = room.playerOrder[room.chooserIndex] ?? null;
+};
+
+const beginPromptSelection = (roomId, { advanceRound = false } = {}) => {
+    const room = rooms.get(roomId);
+    if (!room) return;
+
+    if (advanceRound) {
+        room.round += 1;
+        if (room.playerOrder.length > 0) {
+            room.chooserIndex = (room.chooserIndex + 1) % room.playerOrder.length;
+        }
+    }
+
+    normalizeChooserIndex(room);
+    room.phase = 'prompt_selection';
+    room.submissions = {};
+    room.votes = {};
+    room.voters = [];
+    room.readyForNextRound = [];
+    room.winnerAnnouncement = null;
+    room.promptSkipsRemaining = MAX_PROMPT_SKIPS;
+    room.prompt = getPromptChoices();
+
+    io.to(roomId).emit('state_update', room);
+};
+
+const revealPrompt = (roomId) => {
+    const room = rooms.get(roomId);
+    if (!room) return;
+
+    room.phase = 'prompt';
+    io.to(roomId).emit('state_update', room);
+
+    setTimeout(() => {
+        const currentRoom = rooms.get(roomId);
+        if (!currentRoom || currentRoom.phase !== 'prompt') return;
+
+        currentRoom.phase = 'construction';
+        io.to(roomId).emit('state_update', currentRoom);
+    }, PROMPT_READ_MS);
+};
+
+const finalizeVoting = (roomId) => {
+    const room = rooms.get(roomId);
+    if (!room) return;
+
+    const voteEntries = Object.entries(room.votes);
+    const tally = {};
+
+    voteEntries.forEach(([, targetId]) => {
+        tally[targetId] = (tally[targetId] || 0) + 1;
+    });
+
+    Object.entries(tally).forEach(([targetId, count]) => {
+        if (room.players[targetId]) {
+            room.players[targetId].score += count;
+        }
+    });
+
+    const ranked = Object.entries(tally)
+        .filter(([targetId]) => room.players[targetId] && room.submissions[targetId])
+        .sort((a, b) => b[1] - a[1]);
+
+    let topDishes = [];
+    if (ranked.length > 0) {
+        const highestVotes = ranked[0][1];
+        topDishes = ranked
+            .filter(([, count]) => count === highestVotes)
+            .map(([playerId, count]) => ({
+                playerId,
+                playerName: room.players[playerId].name,
+                avatar: room.players[playerId].avatar,
+                dish: room.submissions[playerId],
+                votes: count
+            }));
+
+        if (topDishes.length === 1 && room.players[topDishes[0].playerId]) {
+            room.players[topDishes[0].playerId].score += 1;
+        }
+    }
+
+    room.winnerAnnouncement = {
+        topDishes,
+        bonusAwarded: topDishes.length === 1,
+        totalVotes: voteEntries.length
+    };
+    room.phase = 'winner';
+
+    io.to(roomId).emit('state_update', room);
+
+    setTimeout(() => {
+        const currentRoom = rooms.get(roomId);
+        if (!currentRoom || currentRoom.phase !== 'winner') return;
+
+        currentRoom.phase = 'results';
+        currentRoom.readyForNextRound = [];
+        io.to(roomId).emit('state_update', currentRoom);
+    }, WINNER_REVEAL_MS);
+};
+
+const maybeAdvanceFromVoting = (roomId) => {
+    const room = rooms.get(roomId);
+    if (!room || room.phase !== 'voting') return;
+
+    const totalPlayers = Object.keys(room.players).length;
+    if (totalPlayers <= 1) {
+        finalizeVoting(roomId);
+        return;
+    }
+
+    if (room.voters.length >= totalPlayers) {
+        finalizeVoting(roomId);
+    }
+};
+
+const maybeAdvanceFromConstruction = (roomId) => {
+    const room = rooms.get(roomId);
+    if (!room || room.phase !== 'construction') return;
+
+    if (Object.keys(room.submissions).length === Object.keys(room.players).length) {
+        room.phase = 'voting';
+        room.votes = {};
+        room.voters = [];
+        io.to(roomId).emit('state_update', room);
+    }
+};
+
+const removePlayerFromRoom = (roomId, socketId) => {
+    const room = rooms.get(roomId);
+    if (!room || !room.players[socketId]) return;
+
+    const wasHost = room.players[socketId].isHost;
+
+    delete room.players[socketId];
+    delete room.submissions[socketId];
+    delete room.votes[socketId];
+
+    Object.keys(room.votes).forEach((voterId) => {
+        if (room.votes[voterId] === socketId) {
+            delete room.votes[voterId];
+        }
+    });
+
+    room.voters = room.voters.filter((voterId) => voterId !== socketId);
+    room.readyForNextRound = room.readyForNextRound.filter((playerId) => playerId !== socketId);
+
+    const removedIndex = room.playerOrder.indexOf(socketId);
+    if (removedIndex !== -1) {
+        room.playerOrder.splice(removedIndex, 1);
+        if (removedIndex < room.chooserIndex && room.chooserIndex > 0) {
+            room.chooserIndex -= 1;
+        }
+    }
+
+    normalizeChooserIndex(room);
+
+    if (wasHost && room.playerOrder.length > 0) {
+        const nextHostId = room.playerOrder[0];
+        if (room.players[nextHostId]) {
+            room.players[nextHostId].isHost = true;
+        }
+    }
+
+    if (Object.keys(room.players).length === 0) {
+        rooms.delete(roomId);
+        disconnectTimeouts.delete(roomId);
+        console.log(`[${new Date().toISOString()}] 🗑️ Room ${roomId} deleted (empty)`);
+        return;
+    }
+
+    maybeAdvanceFromConstruction(roomId);
+    maybeAdvanceFromVoting(roomId);
+    io.to(roomId).emit('state_update', room);
+};
 
 io.on('connection', (socket) => {
     console.log(`[${new Date().toISOString()}] 🟢 User connected: ${socket.id} (IP: ${socket.handshake.address})`);
@@ -109,7 +326,7 @@ io.on('connection', (socket) => {
 
         rooms.set(roomId, {
             ...createGameState(),
-            voters: [], // Track unique voters
+            voters: [],
             round: 1
         });
 
@@ -119,6 +336,8 @@ io.on('connection', (socket) => {
         // Update State
         const room = rooms.get(roomId);
         room.players[socket.id] = { name: playerName, avatar, hand: [], score: 0, isHost: true };
+        room.playerOrder.push(socket.id);
+        normalizeChooserIndex(room);
 
         socket.emit('room_created', roomId);
         io.to(roomId).emit('state_update', room);
@@ -160,11 +379,33 @@ io.on('connection', (socket) => {
                 room.submissions[socket.id] = room.submissions[existingSocketId];
                 delete room.submissions[existingSocketId];
             }
-            // Update voters list if needed
+
+            if (room.votes[existingSocketId]) {
+                room.votes[socket.id] = room.votes[existingSocketId];
+                delete room.votes[existingSocketId];
+            }
+
+            Object.keys(room.votes).forEach((voterId) => {
+                if (room.votes[voterId] === existingSocketId) {
+                    room.votes[voterId] = socket.id;
+                }
+            });
+
             const voterIdx = room.voters.indexOf(existingSocketId);
             if (voterIdx !== -1) room.voters[voterIdx] = socket.id;
 
+            const readyIdx = room.readyForNextRound.indexOf(existingSocketId);
+            if (readyIdx !== -1) room.readyForNextRound[readyIdx] = socket.id;
+
+            const orderIdx = room.playerOrder.indexOf(existingSocketId);
+            if (orderIdx !== -1) room.playerOrder[orderIdx] = socket.id;
+
+            if (room.promptChooserId === existingSocketId) {
+                room.promptChooserId = socket.id;
+            }
+
             delete room.players[existingSocketId];
+            normalizeChooserIndex(room);
 
             socket.join(roomId);
             socket.emit('room_created', roomId);
@@ -183,6 +424,8 @@ io.on('connection', (socket) => {
 
         // New Player Join
         room.players[socket.id] = { name: playerName, avatar, hand: [], score: 0, isHost: false };
+        room.playerOrder.push(socket.id);
+        normalizeChooserIndex(room);
 
         console.log(`[${new Date().toISOString()}] ✅ Joined Success: ${playerName} -> ${roomId}`);
 
@@ -198,22 +441,56 @@ io.on('connection', (socket) => {
         // Reset scores for a fresh game
         Object.values(room.players).forEach(p => p.score = 0);
 
+        room.phase = 'lobby';
+        room.round = 1;
+        room.submissions = {};
+        room.votes = {};
         room.voters = [];
-        startGameLoop(roomId);
+        room.readyForNextRound = [];
+        room.winnerAnnouncement = null;
+        room.chooserIndex = 0;
+        normalizeChooserIndex(room);
+
+        beginPromptSelection(roomId);
     });
 
     socket.on('next_round', (roomId) => {
-        console.log(`[${new Date().toISOString()}] 🔄 Next Round Requested: ${roomId}`);
+        console.log(`[${new Date().toISOString()}] 🔄 Next Recipe Ready: ${roomId} from ${socket.id}`);
         const room = rooms.get(roomId);
         if (!room) return;
 
-        room.round++;
-        // Reset for new round
-        room.submissions = {};
-        room.votes = { funny: {}, saucy: {} };
-        room.voters = [];
+        if (room.phase !== 'results') return;
 
-        startGameLoop(roomId);
+        if (!room.readyForNextRound.includes(socket.id)) {
+            room.readyForNextRound.push(socket.id);
+        }
+
+        const threshold = Math.ceil(Object.keys(room.players).length / 2);
+        if (room.readyForNextRound.length >= threshold) {
+            beginPromptSelection(roomId, { advanceRound: true });
+            return;
+        }
+
+        io.to(roomId).emit('state_update', room);
+    });
+
+    socket.on('skip_prompt', (roomId) => {
+        const room = rooms.get(roomId);
+        if (!room || room.phase !== 'prompt_selection') return;
+        if (room.promptChooserId !== socket.id) return;
+        if (room.promptSkipsRemaining <= 0) return;
+
+        room.prompt = getPromptChoices([room.prompt]);
+        room.promptSkipsRemaining -= 1;
+        io.to(roomId).emit('state_update', room);
+    });
+
+    socket.on('choose_prompt', (roomId) => {
+        const room = rooms.get(roomId);
+        if (!room || room.phase !== 'prompt_selection') return;
+        if (room.promptChooserId !== socket.id) return;
+
+        revealPrompt(roomId);
     });
 
     socket.on('end_game', (roomId) => {
@@ -230,72 +507,35 @@ io.on('connection', (socket) => {
         io.to(roomId).emit('state_update', room);
     });
 
-    const startGameLoop = (roomId) => {
-        const room = rooms.get(roomId);
-        if (!room) return;
-
-        room.phase = 'prompt';
-        room.prompt = PROMPTS[Math.floor(Math.random() * PROMPTS.length)];
-        io.to(roomId).emit('state_update', room);
-
-        // 5 seconds prompt reading time
-        setTimeout(() => {
-            if (room.phase === 'prompt') {
-                room.phase = 'construction';
-                io.to(roomId).emit('state_update', room);
-            }
-        }, 5000);
-    };
-
     socket.on('submit_salad', ({ roomId, salad }) => {
         console.log(`[${new Date().toISOString()}] 🥗 Salad Submitted: ${roomId} from ${socket.id}`);
         const room = rooms.get(roomId);
-        if (!room) return;
+        if (!room || room.phase !== 'construction') return;
 
-        // Store salad (submission)
-        // We strip IDs here to avoid any issues, or just keep them
         room.submissions[socket.id] = salad;
 
-        // If all players submitted, advance to voting
-        if (Object.keys(room.submissions).length === Object.keys(room.players).length) {
-            console.log(`[${new Date().toISOString()}] 🗳️ All Submissions In: ${roomId} -> Voting`);
-            room.phase = 'voting';
-            room.votes = { funny: {}, saucy: {} };
+        maybeAdvanceFromConstruction(roomId);
+        if (rooms.get(roomId)?.phase === 'construction') {
+            io.to(roomId).emit('state_update', room);
         }
-
-        io.to(roomId).emit('state_update', room);
     });
 
-    socket.on('vote', ({ roomId, category, targetId }) => {
-        console.log(`[${new Date().toISOString()}] 🗳️ Vote Cast: ${roomId} [${category}] for ${targetId}`);
+    socket.on('vote', ({ roomId, targetId }) => {
+        console.log(`[${new Date().toISOString()}] 🗳️ Vote Cast: ${roomId} from ${socket.id} for ${targetId}`);
         const room = rooms.get(roomId);
-        // Ensure room exists and votes object structure is valid
-        if (!room || !room.votes || !room.votes[category]) return;
+        if (!room || room.phase !== 'voting') return;
+        if (!room.players[targetId] || targetId === socket.id) return;
+        if (room.votes[socket.id]) return;
 
-        const currentVotes = room.votes[category][targetId] || 0;
-        room.votes[category][targetId] = currentVotes + 1;
-
-        // Update Score
-        if (room.players[targetId]) {
-            room.players[targetId].score += 1;
-        }
-
-        // Track WHO voted
-        if (!room.voters) room.voters = [];
+        room.votes[socket.id] = targetId;
         if (!room.voters.includes(socket.id)) {
             room.voters.push(socket.id);
         }
 
-        // Check if everyone has voted
-        const totalPlayers = Object.keys(room.players).length;
-        const totalVoters = room.voters.length;
-
-        if (totalVoters >= totalPlayers) {
-            console.log(`✅ All players voted in ${roomId}. Advancing to results...`);
-            room.phase = 'results';
+        maybeAdvanceFromVoting(roomId);
+        if (rooms.get(roomId)?.phase === 'voting') {
+            io.to(roomId).emit('state_update', room);
         }
-
-        io.to(roomId).emit('state_update', room);
     });
 
     socket.on('disconnect', (reason) => {
@@ -312,19 +552,7 @@ io.on('connection', (socket) => {
                 const timeoutId = setTimeout(() => {
                     console.log(`[${new Date().toISOString()}] 🧹 Removing ${playerName} from ${roomId} (Timeout)`);
 
-                    if (room.players[socket.id]) {
-                        delete room.players[socket.id];
-                        delete room.submissions[socket.id];
-
-                        // Check empty room
-                        if (Object.keys(room.players).length === 0) {
-                            rooms.delete(roomId);
-                            disconnectTimeouts.delete(roomId);
-                            console.log(`[${new Date().toISOString()}] 🗑️ Room ${roomId} deleted (empty)`);
-                        } else {
-                            io.to(roomId).emit('state_update', room);
-                        }
-                    }
+                    removePlayerFromRoom(roomId, socket.id);
                     if (disconnectTimeouts.has(roomId)) disconnectTimeouts.get(roomId).delete(playerName);
 
                 }, 60000); // 60 seconds grace period
